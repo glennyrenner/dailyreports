@@ -1,0 +1,612 @@
+{% extends 'main/base.html' %}
+{% block content %}
+
+
+<script>
+    $(document).ready(function () {
+        function CreatePDFfromHTML() {
+            var HTML_Width = $("#page-1").width();
+            var HTML_Height = $("#page-1").height();
+            var top_left_margin = 0;
+            var PDF_Width = HTML_Width + (top_left_margin * 2);
+            var PDF_Height = (PDF_Width * 1.5) + (top_left_margin * 2);
+            var canvas_image_width = HTML_Width;
+            var canvas_image_height = HTML_Height;
+
+            var totalPDFPages = Math.ceil(HTML_Height / PDF_Height) - 1;
+
+            html2canvas($("#page-1")[0]).then(function (canvas) {
+                var imgData = canvas.toDataURL("image/jpeg", 1.0);
+                var pdf = new jsPDF('p', 'pt', [PDF_Width, PDF_Height]);
+                pdf.addImage(imgData, 'JPG', top_left_margin, top_left_margin, canvas_image_width, canvas_image_height);
+                for (var i = 1; i <= totalPDFPages; i++) {
+                    pdf.addPage(PDF_Width, PDF_Height);
+                    pdf.addImage(imgData, 'JPG', top_left_margin, -(PDF_Height * i) + (top_left_margin * 4), canvas_image_width, canvas_image_height);
+                }
+                pdf.save("report_1.pdf");
+            });
+
+
+
+            var HTML_Width = $("#page-2").width();
+            var HTML_Height = $("#page-2").height();
+            var top_left_margin = 0;
+            var PDF_Width = HTML_Width + (top_left_margin * 2);
+            var PDF_Height = (PDF_Width * 1.5) + (top_left_margin * 2);
+            var canvas_image_width = HTML_Width;
+            var canvas_image_height = HTML_Height;
+
+            var totalPDFPages = Math.ceil(HTML_Height / PDF_Height) - 1;
+
+            html2canvas($("#page-2")[0]).then(function (canvas) {
+                var imgData = canvas.toDataURL("image/jpeg", 1.0);
+                var pdf = new jsPDF('p', 'pt', [PDF_Width, PDF_Height]);
+                pdf.addImage(imgData, 'JPG', top_left_margin, top_left_margin, canvas_image_width, canvas_image_height);
+                for (var i = 1; i <= totalPDFPages; i++) {
+                    pdf.addPage(PDF_Width, PDF_Height);
+                    pdf.addImage(imgData, 'JPG', top_left_margin, -(PDF_Height * i) + (top_left_margin * 4), canvas_image_width, canvas_image_height);
+                }
+                pdf.save("report_2.pdf");
+            });
+
+        }
+        $("#print-button").on("click", function () {
+            window.scrollTo(0, 0);
+            CreatePDFfromHTML();
+        });
+    });
+</script>
+
+
+<div class="container">
+    <form class="row" method="POST">{% csrf_token %}
+        <div class="col-7"></div>
+        <div class="form-group col-3">
+            <input type="date" name="date" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp"
+                placeholder="Enter email">
+        </div>
+        <button type="submit" class="btn btn-success col-1 mb-3 button-gln"><svg xmlns="http://www.w3.org/2000/svg"
+                width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                <path
+                    d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+            </svg></button>
+        <div class="col-1"></div>
+    </form>
+    {% if message %}
+    <div class="alert alert-warning" role="alert">
+        {{message}}
+    </div>
+    {% endif %}
+    <div style="width:100%; background-color: black; height: 1px;"></div>
+
+    <div class="printable" style="position: relative; padding:1rem" id="page-1">
+        <div id="page-1-header" style="position:absolute; top:1rem; right:1rem">{{ date }}</div>
+
+        <!-- TICKET START HERE -->
+        <div class="cdd-ticket mt-0 container">
+            <div class="row text-center"><p class="col-12 display-2" style="font-size: 1rem">DAY REPORTS SUMMARY</p></div>
+            <div class="row">
+                <div class="col-6">
+                    <p class="ticket-title">SO/SC</p>
+                    <table class="table table-sm table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th style="font-size:.7rem" scope="row"></th>
+                                <th style="font-size:.7rem" scope="col">PREV</th>
+                                <th style="font-size:.7rem" scope="col">INTERV</th>
+                                <th style="font-size:.7rem" scope="col">ENV</th>
+                                <th style="font-size:.7rem" scope="col">MEDIC</th>
+                                <th style="font-size:.7rem" scope="col">JV</th>
+                                <th style="font-size:.7rem; color:red" scope="col">TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th style="font-size:.7rem" scope="row">24H</th>
+                                <td>{{prev_r.so_sc_24_prev}}</td>
+                                <td>{{interv_r.so_sc_24}}</td>
+                                <td>{{env_r.so_sc_24}}</td>
+                                <td>{{medic_r.so_sc_24}}</td>
+                                <td>{{prev_r.so_sc_24_jv}}</td>
+                                <td style="color:red">{{total_24}}</td>
+                            </tr>
+                            <tr>
+                                <th style="font-size:.7rem" scope="row">MTD</th>
+                                <td>{{prev_r.so_sc_mtd_prev}}</td>
+                                <td>{{interv_r.so_sc_mtd}}</td>
+                                <td>{{env_r.so_sc_mtd}}</td>
+                                <td>{{medic_r.so_sc_mtd}}</td>
+                                <td>{{prev_r.so_sc_mtd_jv}}</td>
+                                <td style="color:red">{{total_mtd}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-6">
+                    <p class="ticket-title">Incidents / Accidents</p>
+                    <table class="table table-sm table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th style="font-size:.7rem" scope="row"></th>
+                                <th colspan="2" style="font-size:.7rem" scope="col">PREV</th>
+                                <th style="font-size:.7rem" scope="col">ENV</th>
+                                <th style="font-size:.7rem" scope="col">MEDIC</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th style="font-size:.7rem" scope="row">24H</th>
+                                <td colspan="2">{{prev_r.incident_24}}</td>
+                                <td>{{env_r.incident_24}}</td>
+                                <td>{{medic_r.incident}}</td>
+                            </tr>
+                            <tr>
+                                <th style="font-size:.7rem" scope="row">MTD</th>
+                                <td><span style="font-size: 0.7rem; font-weight:bold;">REC :</span>
+                                    {{prev_r.incident_mtd_rec}}
+                                </td>
+                                <td><span style="font-size: 0.7rem; font-weight:bold;">ALL :</span>
+                                    {{prev_r.incident_mtd_all}}
+                                </td>
+                                <td>{{env_r.incident_mtd}}</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <th style="font-size:.7rem" scope="row">YTD</th>
+                                <td><span style="font-size: 0.7rem; font-weight:bold;">REC :</span>
+                                    {{prev_r.incident_ytd_rec}}
+                                </td>
+                                <td><span style="font-size: 0.7rem; font-weight:bold;">ALL :</span>
+                                    {{prev_r.incident_ytd_all}}
+                                </td>
+                                <td>{{env_r.incident_ytd}}</td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- TICKET end HERE -->
+
+        <!-- TICKET START HERE -->
+        <div class="cdd-ticket mt-1 container">
+            <p class="ticket-title">Manpower</p>
+            <div class="row">
+                <div class="col-6">
+                    <p class="ticket-title">MEDIC</p>
+                    <table class="table table-sm table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th colspan="2" rowspan="2" style="font-size:.7rem" scope="col">DOC</th>
+                                <th colspan="2" rowspan="2" style="font-size:.7rem" scope="col">MEDIC CPF</th>
+                                <th colspan="2" style="font-size:.7rem" scope="col">MEDIC BDV</th>
+                                <th colspan="2" style="font-size:.7rem" scope="col">MEDIC </th>
+                            </tr>
+                            <tr>
+                                <th style="font-size:.7rem" scope="col">DAY</th>
+                                <th style="font-size:.7rem" scope="col">NIGHT</th>
+                                <th style="font-size:.7rem" scope="col">DAY</th>
+                                <th style="font-size:.7rem" scope="col">NIGHT</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="2">{{medic_r.doc}}</td>
+                                <td colspan="2">{{medic_r.cpf}}</td>
+                                <td>{{medic_r.bdv_jour}}</td>
+                                <td>{{medic_r.bdv_nuit}}</td>
+                                <td>{{medic_r.iacp_jour}}</td>
+                                <td>{{medic_r.iacp_nuit}}</td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-6">
+                    <p class="ticket-title">INTERV</p>
+                    <table class="table table-sm table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th style="font-size:.7rem" scope="col">CMT</th>
+                                <th style="font-size:.7rem" scope="col">CE</th>
+                                <th style="font-size:.7rem" scope="col">TECH</th>
+                                <th style="font-size:.7rem" scope="col">COND</th>
+                                <th style="font-size:.7rem" scope="col">AGT</th>
+                                <th style="font-size:.7rem; color:red;" scope="col">TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{interv_r.pers_cmt}}</td>
+                                <td>{{interv_r.pers_ce}}</td>
+                                <td>{{interv_r.pers_tech}}</td>
+                                <td>{{interv_r.pers_cond}}</td>
+                                <td>{{interv_r.pers_agt}}</td>
+                                <td style="color:red">{{interv_r.pers_total}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-6">
+                    <p class="ticket-title">INTERV Shift</p>
+                    <table class="table table-sm table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th style="font-size:.7rem; width:50%" scope="col">DAY</th>
+                                <th style="font-size:.7rem; width:50%" scope="col">NIGHT</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{interv_r.perm_jour}}</td>
+                                <td>{{interv_r.perm_nuit}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-6">
+                    <p class="ticket-title">PREV</p>
+                    <table class="table table-sm table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th style="font-size:.7rem; width:25%" scope="col">CDS</th>
+                                <th style="font-size:.7rem; width:25%" scope="col">ENG</th>
+                                <th style="font-size:.7rem; width:25%" scope="col">INSP</th>
+                                <th style="font-size:.7rem; width:25%" scope="col">TECH</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{prev_r.manpower_cds}}</td>
+                                <td>{{prev_r.manpower_eng}}</td>
+                                <td>{{prev_r.manpower_insp}}</td>
+                                <td>{{prev_r.manpower_tech}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- TICKET end HERE -->
+        <!-- TICKET START HERE -->
+        <div class="cdd-ticket mt-1 container">
+            <p class="ticket-title">EQUIPMENT</p>
+            <div class="row">
+                <div class="col-6">
+                    <p class="ticket-title">MEDIC Equipment</p>
+                    <table class="table table-sm table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th style="font-size:.7rem" scope="col">TOYOTA</th>
+                                <th style="font-size:.7rem" scope="col">RENAULT</th>
+                                <th style="font-size:.7rem" scope="col">MERCEDES</th>
+                                <th style="font-size:.7rem" scope="col">MERCEDES(4X4)</th>
+                                <th style="font-size:.7rem" scope="col">OUT OF SERVICE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{medic_r.toyota}}</td>
+                                <td>{{medic_r.renault}}</td>
+                                <td>{{medic_r.mercedes}}</td>
+                                <td>{{medic_r.mercedes4x4}}</td>
+                                <td>{{medic_r.equip_hors_serv}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-6">
+                    <p class="ticket-title">INTERV Equipment</p>
+                    <table class="table table-sm table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th style="font-size:.7rem" scope="col">RESCUE</th>
+                                <th style="font-size:.7rem" scope="col">FIRE FIGHTING</th>
+                                <th style="font-size:.7rem" scope="col">VMA45</th>
+                                <th style="font-size:.7rem" scope="col">SILVANI</th>
+                                <th style="font-size:.7rem" scope="col">LANDROVER</th>
+                                <th style="font-size:.7rem" scope="col">OTHERS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{interv_r.etat_rescue}}</td>
+                                <td>{{interv_r.etat_fire_fighting}}</td>
+                                <td>{{interv_r.etat_vma45}}</td>
+                                <td>{{interv_r.etat_silvani}}</td>
+                                <td>{{interv_r.etat_landrover}}</td>
+                                <td>{{interv_r.etat_others}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- TICKET end HERE -->
+        <!-- TICKET START HERE -->
+        <div class="cdd-ticket mt-1 container">
+            <p class="ticket-title">Other Stats</p>
+
+            <div class="row">
+                <div class="col-3">
+                    <p class="ticket-title">Inspections</p>
+                    <table class="table table-sm table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th style="font-size:.7rem" scope="col">CPF</th>
+                                <th style="font-size:.7rem" scope="col">BDV</th>
+                                <th style="font-size:.7rem" scope="col">CC</th>
+                                <th style="font-size:.7rem" scope="col">IACP</th>
+                                <th style="font-size:.7rem" scope="col">AIRSTRIP</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{interv_r.inspec_cpf}}</td>
+                                <td>{{interv_r.inspec_bdv}}</td>
+                                <td>{{interv_r.inspec_cc}}</td>
+                                <td>{{interv_r.inspec_iacp}}</td>
+                                <td>{{interv_r.inspec_airstrip}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-4">
+                    <p class="ticket-title"># PTW</p>
+                    <table class="table table-sm table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th style="font-size:.7rem" scope="col">CPF</th>
+                                <th style="font-size:.7rem" scope="col">PROJ DEB</th>
+                                <th style="font-size:.7rem" scope="col">LOG</th>
+                                <th style="font-size:.7rem; color:red" scope="col">TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{prev_r.num_ptw_cpf}}</td>
+                                <td>{{prev_r.num_ptw_projdeb}}</td>
+                                <td>{{prev_r.num_ptw_log}}</td>
+                                <td style="color:red">{{prev_r.num_ptw_total}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-2">
+                    <p class="ticket-title">INSP/AUDIT</p>
+                    <table class="table table-sm table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th style="font-size:.7rem" scope="col">PREV</th>
+                                <th style="font-size:.7rem" scope="col">JV</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{prev_r.inspection_audit_prev}}</td>
+                                <td>{{prev_r.inspection_audit_jv}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-3">
+                    <p class="ticket-title">GAS Detectors</p>
+                    <table class="table table-sm table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th style="font-size:.7rem" scope="col">AVAIL</th>
+                                <th style="font-size:.7rem" scope="col">ISSUED</th>
+                                <th style="font-size:.7rem" scope="col">OOS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{prev_r.gasdet_avail}}</td>
+                                <td>{{prev_r.gasdet_issued}}</td>
+                                <td>{{prev_r.gasdet_outofserv}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+            <div class="row">
+                <div class="col-6">
+                    <p class="ticket-title">MEDICAL VISITS</p>
+                    <table class="table table-sm table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th colspan="2" style="font-size:.7rem" scope="col">Consultation</th>
+                                <th colspan="2" style="font-size:.7rem" scope="col">Embauche</th>
+                                <th rowspan="2" style="font-size:.7rem" scope="col">Periodic</th>
+                                <th rowspan="2" style="font-size:.7rem" scope="col">General Care</th>
+                            </tr>
+                            <tr>
+                                <th style="font-size:.7rem" scope="col">JV</th>
+                                <th style="font-size:.7rem" scope="col">Extra</th>
+                                <th style="font-size:.7rem" scope="col">JV</th>
+                                <th style="font-size:.7rem" scope="col">Extra</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{medic_r.cons_jv}}</td>
+                                <td>{{medic_r.cons_extra}}</td>
+                                <td>{{medic_r.embauche_jv}}</td>
+                                <td>{{medic_r.embauche_extra}}</td>
+                                <td>{{medic_r.periodique}}</td>
+                                <td>{{medic_r.soins_genereux}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-6">
+                    <p class="ticket-title">ENV STATS</p>
+                    <table class="table table-sm table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th colspan="4" style="font-size:.7rem" scope="col">WASTE WATER QUALITY</th>
+                                <th rowspan="2" style="font-size:.7rem" scope="col">SWIMMING POOL</th>
+                                <th rowspan="2" style="font-size:.7rem" scope="col">DOMESTIC</th>
+                                <th rowspan="2" style="font-size:.7rem" scope="col">SOLID</th>
+                            </tr>
+                            <tr>
+                                <th style="font-size:.7rem" scope="col">CPF</th>
+                                <th style="font-size:.7rem" scope="col">IACP</th>
+                                <th style="font-size:.7rem" scope="col">SARPI</th>
+                                <th style="font-size:.7rem" scope="col">MILITARY</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{env_r.waste_water_quality_cpf}}</td>
+                                <td>{{env_r.waste_water_quality_iacp}}</td>
+                                <td>{{env_r.waste_water_quality_sarpi}}</td>
+                                <td>{{env_r.waste_water_quality_military}}</td>
+                                <td>{{env_r.swimming_pool}}</td>
+                                <td>{{env_r.domestic_water_quality}}</td>
+                                <td>{{env_r.solid_waste}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p style="padding:0; margin:0; font-size:.5rem; text-align: center;">S NAME: {{env_r.name}}</p>
+                </div>
+            </div>
+
+        </div>
+        <!-- TICKET end HERE -->
+
+
+        <div id="page-1-footer" style="font-size:.7rem; position:absolute; bottom:1.6rem; right:1rem">PAGE 1</div>
+    </div>
+
+
+    <div style="width:100%; background-color: black; height: 1px;"></div>
+
+    <div class="printable" style="position: relative;" id="page-2">
+        <div id="page-2-header" style="position:absolute; top:1rem; right:1rem">{{ date }}</div>
+
+        <div class="container mt-5">
+            <div class="row">
+                <div class="col-6 medic-acts-ticket">
+                    <p class="ticket-title">MEDIC Yesterday's Activities</p>
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Activity</th>
+                                <th scope="col">Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in medic_a %}
+                            <tr>
+                                <th scope="row"></th>
+                                <td>{{a.name}}</td>
+                                <td>{{a.act_type}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-6 prev-acts-ticket">
+                    <p class="ticket-title">Prev Yesterday's Activities</p>
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Activity</th>
+                                <th scope="col">Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in prev_a %}
+                            <tr>
+                                <th scope="row"></th>
+                                <td>{{a.name}}</td>
+                                <td>{{a.act_type}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-6 env-acts-ticket">
+                    <p class="ticket-title">Environment Yesterday's Activities</p>
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Activity</th>
+                                <th scope="col">Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in env_a %}
+                            <tr>
+                                <th scope="row"></th>
+                                <td>{{a.name}}</td>
+                                <td>{{a.act_type}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-6 interv-acts-ticket">
+                    <p class="ticket-title">Interv Yesterday's Activities</p>
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Activity</th>
+                                <th scope="col">Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in interv_a %}
+                            <tr>
+                                <th scope="row"></th>
+                                <td>{{a.name}}</td>
+                                <td>{{a.act_type}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-6 adv-acts-ticket">
+                    <p class="ticket-title">Advisor Yesterday's Activities</p>
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Activity</th>
+                                <th scope="col">Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in adv_a %}
+                            <tr>
+                                <th scope="row"></th>
+                                <td>{{a.name}}</td>
+                                <td>{{a.act_type}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-2-footer" style="position:absolute; bottom:1rem; right:1rem">PAGE 2</div>
+    </div>
+
+    <div style="width:100%; background-color: black; height: 1px;"></div>
+
+    <button class="btn btn-warning my-2 mx-2 px-4" style="position: fixed; bottom:2rem; right: 6rem;"
+        id="print-button">Print</button>
+</div>
+{% endblock %}

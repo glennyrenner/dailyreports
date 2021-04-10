@@ -1,0 +1,462 @@
+{% extends 'main/base.html' %}
+{% block content %}
+
+<script>
+    $(document).ready(function () {
+        function addTodayActivity() {
+            let name = $("#tod-name-input").val();
+            let type = $("#tod-type-input").val();
+
+            $("#tod-name-input").val("");
+            $("#tod-type-input").val("");
+            if (name != "" && type != "") {
+                var newAct = document.createElement('tr');
+                newAct.innerHTML = document.getElementById("activity-template").innerHTML;
+                newAct.setAttribute("class", "activity-template-class");
+                $(newAct).data("name", name);
+                $(newAct).data("type", type);
+                $(newAct).data("day", "today");
+
+                $(newAct).children("#name").html(name);
+                $(newAct).children("#type").html(type);
+                // hook remove button
+                $(newAct).children("#remove-button").on("click", function(){
+                    $(this).parent().remove();
+                });
+                // fill in 
+                $("#today-activities-container").append($(newAct));
+            }
+
+            // update numbers
+            $("#today-activities-container .row-number").each(function (i) {
+                $(this).html(i + 1);
+            });
+        }
+
+        function addYesterdayActivity() {
+            let name = $("#yest-name-input").val();
+            let type = $("#yest-type-input").val();
+
+            $("#yest-name-input").val("");
+            $("#yest-type-input").val("");
+            if (name != "" && type != "") {
+                var newAct = document.createElement('tr');
+                newAct.innerHTML = document.getElementById("activity-template").innerHTML;
+                newAct.setAttribute("class", "activity-template-class");
+                $(newAct).data("name", name);
+                $(newAct).data("type", type);
+                $(newAct).data("day", "yesterday");
+
+                $(newAct).children("#name").html(name);
+                $(newAct).children("#type").html(type);
+                // hook remove button
+                $(newAct).children("#remove-button").on("click", function(){
+                    $(this).parent().remove();
+                });
+                // fill in 
+                $("#yesterday-activities-container").append($(newAct));
+            }
+
+            // update numbers
+            $("#yesterday-activities-container .row-number").each(function (i) {
+                $(this).html(i + 1);
+            });
+        }
+        // bind
+        $("#add-yesterday-act-button").on("click", function () {
+            addYesterdayActivity();
+        });
+
+        $('#yest-type-input').keyup(function (e) {
+            if (e.keyCode == 13) {
+                addYesterdayActivity();
+            }
+        });
+
+        $("#add-today-act-button").on("click", function () {
+            addTodayActivity();
+        });
+
+        $('#tod-type-input').keyup(function (e) {
+            if (e.keyCode == 13) {
+                addTodayActivity();
+            }
+        });
+
+
+        // submitting the report
+        $("#submit-report").on("click", function () {
+            if ($("#date").val() == '') {
+                alert("Please enter a valid date");
+                return;
+            }
+            var activities = []
+            $("#today-activities-container .activity-template-class").each(function (i) {
+                let day = {
+                    number: $(this).children(".row-number").html(),
+                    name: $(this).children("#name").html(),
+                    type: $(this).children("#type").html(),
+                    day: 'today',
+                }
+
+                activities.push(day);
+            });
+            $("#yesterday-activities-container .activity-template-class").each(function (i) {
+                let day = {
+                    number: $(this).children(".row-number").html(),
+                    name: $(this).children("#name").html(),
+                    type: $(this).children("#type").html(),
+                    day: 'yesterday',
+                }
+
+                activities.push(day);
+            });
+
+            data = {
+                date: $("#date").val(),
+                so_sc_24: $("#so_sc_24").val(),
+                so_sc_mtd: $("#so_sc_mtd").val(),
+                incident: $("#incident").val(),
+                doc: $("#doc").val(),
+                cpf: $("#cpf").val(),
+                bdv_jour: $("#bdv_jour").val(),
+                bdv_nuit: $("#bdv_nuit").val(),
+                iacp_jour: $("#iacp_jour").val(),
+                iacp_nuit: $("#iacp_nuit").val(),
+                toyota: $("#toyota").val(),
+                renault: $("#renault").val(),
+                mercedes: $("#mercedes").val(),
+                mercedes4x4: $("#mercedes4x4").val(),
+                equip_hors_serv: $("#equip_hors_serv").val(),
+                cons_jv: $("#cons_jv").val(),
+                cons_extra: $("#cons_extra").val(),
+                embauche_jv: $("#embauche_jv").val(),
+                embauche_extra: $("#embauche_extra").val(),
+                periodique: $("#periodique").val(),
+                soins_genereux: $("#soins_genereux").val(),
+                activities: activities
+            }
+            console.log(data);
+
+            $.ajax({
+                url: "{% url 'submit-medic-report' %}",
+                method: "GET",
+                dataType: "json",
+                data: { data: JSON.stringify(data) },
+                success: function (data) {
+                    $("#dialog-success").modal().show();
+                    $("#new-report-button").focus();
+                },
+                error: function (data) {
+                    console.log('oh no');
+                }
+            });
+        })
+    });
+</script>
+
+<div class="container">
+    <div class="px-4 overflow-auto" style="height:40rem">
+        <div class="top-tables">
+            <div class="row text-center">
+                <h4 class="display-4 col-12 mb-0" style="font-size: 3vh">Report Form</h4>
+                <h4 class="display-4 col-12 mb-4" style="font-size: 1.4vh">Medic Report Form Filling</h4>
+            </div>
+            <div class="row">
+                <!-- ROW ROW ROW -->
+                <div class="input-group col-6">
+                </div>
+                <div class="input-group col-6">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Date</span>
+                    </div>
+                    <input type="date" id="date" class="form-control" placeholder="...">
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12 my-1 py-2 report-ticket">
+                    <div class="row text-center">
+                        <p class="col-12">SO/SC</p>
+                    </div>
+                    <div class="row">
+                        <div class="input-group col-6">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">SO/SC 24H</span>
+                            </div>
+                            <input type="text" id="so_sc_24" class="form-control" placeholder="...">
+                        </div>
+                        <div class="input-group col-6">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">MTD</span>
+                            </div>
+                            <input type="text" id="so_sc_mtd" class="form-control" placeholder="...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 my-1 py-2 report-ticket">
+                    <div class="row text-center">
+                        <p class="col-12">Incident/Accident</p>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="input-group col-12">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Incident</span>
+                            </div>
+                            <input type="text" id="incident" class="form-control" placeholder="ALL">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12 my-1 py-2 report-ticket">
+                    <div class="row text-center">
+                        <p class="col-12">Personnel</p>
+                    </div>
+                    <div class="row">
+                        <div class="input-group col-6">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">DOC</span>
+                            </div>
+                            <input type="text" id="doc" class="form-control" placeholder="...">
+                        </div>
+                        <div class="input-group col-6">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">CPF</span>
+                            </div>
+                            <input type="text" id="cpf" class="form-control" placeholder="...">
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="input-group col-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">BDV Day</span>
+                            </div>
+                            <input type="text" id="bdv_jour" class="form-control" placeholder="...">
+                        </div>
+                        <div class="input-group col-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">BDV Night</span>
+                            </div>
+                            <input type="text" id="bdv_nuit" class="form-control" placeholder="...">
+                        </div>
+                        <div class="input-group col-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">IACP Day</span>
+                            </div>
+                            <input type="text" id="iacp_jour" class="form-control" placeholder="...">
+                        </div>
+                        <div class="input-group col-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">IACP Night</span>
+                            </div>
+                            <input type="text" id="iacp_nuit" class="form-control" placeholder="...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12 my-1 py-2 report-ticket">
+                    <div class="row text-center">
+                        <p class="col-12">State of Ambulances</p>
+                    </div>
+                    <div class="row">
+                        <div class="input-group col-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">TOYOTA</span>
+                            </div>
+                            <input type="text" id="toyota" class="form-control" placeholder="...">
+                        </div>
+                        <div class="input-group col-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">RENAULT</span>
+                            </div>
+                            <input type="text" id="renault" class="form-control" placeholder="...">
+                        </div>
+                        <div class="input-group col-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">MERCEDES</span>
+                            </div>
+                            <input type="text" id="mercedes" class="form-control" placeholder="...">
+                        </div>
+                        <div class="input-group col-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">MERCEDES 4X4</span>
+                            </div>
+                            <input type="text" id="mercedes4x4" class="form-control" placeholder="...">
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="input-group col-12">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">OUT OF SERVICES EQUIPMENT</span>
+                            </div>
+                            <input type="text" id="equip_hors_serv" class="form-control" placeholder="...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12 my-1 py-2 report-ticket">
+                    <div class="row text-center">
+                        <p class="col-12">Number of medical visits</p>
+                    </div>
+                    <div class="row">
+                        <div class="input-group col-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Consultation JV</span>
+                            </div>
+                            <input type="text" id="cons_jv" class="form-control" placeholder="...">
+                        </div>
+                        <div class="input-group col-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Extra Consultation</span>
+                            </div>
+                            <input type="text" id="cons_extra" class="form-control" placeholder="...">
+                        </div>
+                        <div class="input-group col-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Embauche JV</span>
+                            </div>
+                            <input type="text" id="embauche_jv" class="form-control" placeholder="...">
+                        </div>
+                        <div class="input-group col-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Extra Embauche</span>
+                            </div>
+                            <input type="text" id="embauche_extra" class="form-control" placeholder="...">
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="input-group col-6">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Periodic</span>
+                            </div>
+                            <input type="text" id="periodique" class="form-control" placeholder="...">
+                        </div>
+                        <div class="input-group col-6">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">General Care</span>
+                            </div>
+                            <input type="text" id="soins_genereux" class="form-control" placeholder="...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+
+
+
+
+        <div class="activities-tables" id="yesterday-activities">
+            <div class="row text-center mb-2">
+                <h4 class="display-4 col-12 mb-1 mt-3" style="font-size: 3vh">Yesterday's Activities</h4>
+            </div>
+            <div class="row px-1">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col" style="width: 4%">#</th>
+                            <th scope="col" style="width: 80%">Activity</th>
+                            <th scope="col" style="width: 16%">Type</th>
+                            <th scope="col" style="width: 16%"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="yesterday-activities-container">
+                        <tr>
+                            <th scope="row">
+                                <div class="svg-button text-center" id="add-yesterday-act-button">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                                        <path d="M0 0h24v24H0z" fill="none" />
+                                        <path
+                                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" />
+                                    </svg>
+                                </div>
+                            </th>
+                            <td><input type="text" class="table-input" style="width:100%"  id="yest-name-input"
+                                    placeholder="Yesterday's Activity"></td>
+                            <td><input type="text" class="table-input" id="yest-type-input" placeholder="Type"></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="row text-center mb-2">
+                <h4 class="display-4 col-12 mb-1 mt-3" style="font-size: 3vh">Today's Activities</h4>
+            </div>
+            <div class="row px-1">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col" style="width: 4%">#</th>
+                            <th scope="col" style="width: 80%">Activity</th>
+                            <th scope="col" style="width: 16%">Type</th>
+                            <th scope="col" style="width: 16%"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="today-activities-container">
+                        <tr>
+                            <th scope="row">
+                                <div class="svg-button text-center" id="add-today-act-button">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                                        <path d="M0 0h24v24H0z" fill="none" />
+                                        <path
+                                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" />
+                                    </svg>
+                                </div>
+                            </th>
+                            <td><input type="text" class="table-input" style="width:100%"  id="tod-name-input"
+                                    placeholder="Today's Activity"></td>
+                            <td><input type="text" class="table-input" id="tod-type-input" placeholder="Type"></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div style="width:100%; height:2rem; position: relative">
+        <button class="btn btn-success" id="submit-report"
+            style="position: absolute; right:10px; border-radius: 5rem !important;">Submit Report</button>
+    </div>
+</div>
+
+<div class="modal" tabindex="-1" role="dialog" id="dialog-success">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Report Saved</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Report Saved Succesfully!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="home-page-button" class="btn btn-dark">Home Page</button>
+                <button type="button" id="new-report-button" class="btn btn-success">New Report</button>
+                <script>
+                    $(document).ready(function () {
+                        $("#home-page-button").on("click", function () {
+                            window.location.href = "{% url 'home' %}";
+                        });
+                        $("#new-report-button").on("click", function () {
+                            window.location.reload();
+                        });
+                    });
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
